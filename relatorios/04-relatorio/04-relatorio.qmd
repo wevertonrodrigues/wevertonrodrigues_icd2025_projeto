@@ -20,6 +20,9 @@ execute:
 #| label: setup
 #| echo: false
 
+# opções para exibição de números 
+options(digits = 5, scipen = 999)
+
 # Carrega os pacotes necessários
 library(tidyverse) # Inclui o dplyr e outros 8 pacotes
 library(gapminder) # Conjunto de dados para os exemplos
@@ -827,9 +830,9 @@ paises_classificados <- gapminder %>%
   filter(year == 2007) %>%
   mutate(
     classe_desenvolvimento = case_when(
-      gdpPercap < 2000 ~ "Baixo",
-      gdpPercap < 10000 ~ "Médio",
-      gdpPercap >= 10000 ~ "Alto"
+      gdpPercap < 2000 ~ "Baixa",
+      gdpPercap < 10000 ~ "Média",
+      gdpPercap >= 10000 ~ "Alta"
     )
   ) %>%
   select(country, gdpPercap, classe_desenvolvimento) %>%
@@ -855,7 +858,24 @@ a população para milhões:
 
 ```{r}
 gapminder %>%
-  mutate(pop_em_milhoes = ___)
+  mutate(pop_em_milhoes = pop/1000000)
+
+gapminder %>%
+  mutate(receita_total = gdpPercap * pop)
+
+gapminder %>%
+  mutate(
+    receita_total = gdpPercap * pop,
+    categoria_receita = case_when(
+      receita_total < 1e10 ~ "Baixa",
+      receita_total >= 1e10 & receita_total < 5e11 ~ "Média",
+      receita_total >= 5e11 ~ "Alta"
+    )
+  )
+
+
+
+
 ```
 
 
@@ -863,7 +883,8 @@ gapminder %>%
 (PIB per capita × população) para cada país.
 
 ```{r}
-# seu codigo aqui
+gapminder %>%
+  mutate(receita_total = gdpPercap * pop)
 ```
 
 
@@ -875,7 +896,16 @@ seja "Sim" quando a população for maior que 50 milhões e "Não"
 caso contrário.
 
 ```{r}
-# seu codigo aqui
+gapminder %>%
+  mutate(
+    receita_total = gdpPercap * pop,
+    categoria_receita = case_when(
+      receita_total < 1e10 ~ "Baixa",
+      receita_total >= 1e10 & receita_total < 5e11 ~ "Média",
+      receita_total >= 5e11 ~ "Alta"
+    )
+  )
+
 ```
 
 
@@ -887,7 +917,14 @@ os países em três categorias baseadas na expectativa de vida:
 - "Alta": mais de 75 anos
 
 ```{r}
-# seu codigo aqui
+gapminder %>%
+  filter(year == 2007) %>%
+  mutate(categoria_vida = case_when(
+    lifeExp < 60 ~ "Baixa",
+    lifeExp >= 60 & lifeExp <= 75 ~ "Média",
+    lifeExp > 75 ~ "Alta"
+  ))
+
 ```
 
 
