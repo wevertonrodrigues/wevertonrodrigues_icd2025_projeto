@@ -1,0 +1,240 @@
+---
+title: "Resolucão da Avaliação 1"
+subtitle: "Introdução à Ciência de Dados - 2025 <br> Bacharelado em Administração"
+author: "WEVERTON RODRIGUES"
+title-block-banner: "#27445C"
+format:
+  html:
+    embed-resources: true
+    page-layout: article
+    toc: true
+    toc-location: left
+lang: "pt"
+date: 2025-05-14
+date-format: long
+execute: 
+  eval: false
+  echo: true
+  warning: false
+  message: false
+crossref:
+  fig-prefix: 'Fig.'
+  tbl-prefix: 'Tab.'
+---
+
+
+```{r}
+#| label: setup
+#| echo: false
+
+# configura a exibição de números
+options(digits = 3, scipen = 99)
+
+# pacotes utilizados
+library(here)
+library(tidyverse)
+library(kableExtra)
+```
+
+
+
+## Questão 1 
+
+
+**a)**
+
+Identificar qual método de pagamento está associado ao melhor faturamento por cliente, para melhorar as campanhas de marketing.
+
+
+**b)** 
+
+Recomendo a análise descritiva, pois ela permite entender melhor os dados dos clientes, como idade, forma de pagamento e devoluções. Isso ajuda a equipe de marketing a ter uma visão geral antes de tomar decisões mais estratégicas.
+
+
+## Questão 2 
+
+
+**a)** 
+
+```{r}
+
+# Importa o arquivo de dados
+
+## 1.1 Define o caminho relativo do arquivo em seu projeto RStudio
+caminho_arquivo <- here::here("dados", "brutos", "onlineshop", "onlineshop.csv")
+
+## 1.2 Importa o arquivo com a funçào read_csv
+
+dados_lojaonline <- readr::read_csv(caminho_arquivo)
+
+```
+
+
+**b)** 
+
+```{r}
+
+dplyr::glimpse(dados_lojaonline)
+```
+
+
+**c.1)** 
+
+Existem 463 observações
+
+**c.2)** 
+
+Cada linha da tabela representa uma visita de um cliente à loja virtual da destilaria. Em cada uma, temos informações como a idade e o sexo da pessoa, o tipo de cliente, como ela pagou, quanto gastou, se devolveu algum produto, se viu propaganda em vídeo, entre outros detalhes.
+
+
+## Questão 3 (8 pontos)
+
+### Tópico: Limpeza e Preparação dos Dados 
+
+**a)** 
+
+```{r}
+dados_lojaonline_limpos <- dados_lojaonline %>% 
+   rename(
+      data = DATE,
+      id_cliente = USER_ID,
+      idade = AGE,
+      sexo = GENDER,
+      tipo = TYPE,
+      score_de_credito = CREDIT_SCORE,
+      tempo_da_conta = LIFETIME,
+      metodo_pagamento = PAYMENT_METHOD,
+      faturamento = TURNOVER,
+      devolucao = SENDBACK,
+      tipo_de_anuncio = VIDEO_AD,
+      convertido = CONVERTED
+   ) %>% 
+   mutate(
+      data = as.Date(data),
+      id_cliente = as.factor(id_cliente),
+      idade = as.integer(idade),
+      sexo = as.factor(sexo),
+      tipo = as.factor(tipo),
+      score_de_credito = factor(score_de_credito, ordered = TRUE),
+      tempo_da_conta = as.integer(tempo_da_conta),
+      metodo_pagamento = as.factor(metodo_pagamento),
+      faturamento = as.numeric(faturamento),
+      devolucao = as.logical(devolucao),
+      tipo_de_anuncio = as.logical(tipo_de_anuncio),
+      convertido = as.logical(convertido)
+   )
+
+dplyr::glimpse(dados_lojaonline_limpos)
+
+```
+
+
+**b)** 
+
+```{r}
+
+summary(dados_lojaonline_limpos)
+
+```
+
+
+**b.1)** 
+
+ron_swanson76, ela teve 15 transações
+
+**b.2)** 
+
+116 clientes não foram classificados.
+
+**b.3)** 
+
+- Faturamento médio = 182
+
+- Faturamento máximo = 718
+
+- Faturamento mínimo = 31
+
+
+
+## Questão 4 (10 pontos)
+
+ 
+**a)** 
+
+
+```{r}
+
+faturamento_medio_pagamento <- dados_lojaonline_limpos %>% 
+   group_by(metodo_pagamento) %>% 
+   summarize(faturamento_medio = mean(faturamento, na.rm = TRUE)) %>% 
+   arrange(desc(faturamento_medio))
+
+# exibe o resultado
+faturamento_medio_pagamento
+
+```
+
+
+
+**b)** 
+
+
+```{r}
+
+clientes_especificos <- dados_lojaonline_limpos %>% 
+   filter(id_cliente %in% c("ron_swanson76", "horst_lüning", "dorothy_parker")) %>% 
+   group_by(id_cliente) %>% 
+   summarize(faturamento_medio_clientes = mean(faturamento, na.rm = TRUE)) %>% 
+   arrange(desc(faturamento_medio_clientes))
+
+# exibe o resultado
+clientes_especificos
+
+```
+
+
+
+**c)** 
+
+
+```{r}
+
+dados_conversao <- dados_lojaonline_limpos %>% 
+   group_by(tipo_de_anuncio) %>% 
+   summarize(
+      total_de_clientes = n(),
+      porcentagem_de_conversao = mean(convertido, na.rm = TRUE),
+      faturamento_medio_por_anuncio = mean(faturamento, na.rm = TRUE)
+   )
+
+# exibe o resultado 
+dados_conversao
+
+```
+
+
+
+**d)** 
+
+
+```{r}
+
+analise_tipo_cliente <- dados_lojaonline_limpos %>%
+  group_by(tipo) %>%
+  summarize(
+    total_transacoes = n(),
+    porcentagem_devolucao = mean(devolucao, na.rm = TRUE) * 100,
+    faturamento_medio = mean(faturamento, na.rm = TRUE),
+    faturamento_sem_devolucao = mean(faturamento[devolucao == FALSE], na.rm = TRUE)
+  )
+
+# exibe o resultado 
+analise_tipo_cliente
+
+
+```
+
+
+
+
+

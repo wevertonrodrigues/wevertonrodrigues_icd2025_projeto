@@ -1,0 +1,705 @@
+---
+title: "Organização de Dados com o Pacote tidyr"
+subtitle: "Fundamentos de Probabilidade para Decisões - Parte 1"
+lang: pt-BR
+author: "Seu Nome"
+date: 2025-05-21
+format: 
+  html:
+    theme: flatly
+    embed-resources: true
+    toc: true
+    number-sections: true
+execute:
+  echo: true
+  message: false
+  warning: false
+---
+
+```{r}
+#| label: setup
+#| echo: false
+
+# configura exibição de números
+options(digits = 8, scipen = 999)
+
+# carrega pacotes
+library(tidyverse)
+library(yfR)
+library(patchwork)
+```
+
+
+
+# Incerteza e Probabilidade 
+
+
+## Somatório e Produtório: Matemática e Implementação em R
+
+- Operador Somatório ($\sum$):
+
+```{r}
+sum(c(3, 7, 2))
+```
+
+
+```{r}
+cumsum(c(3, 7, 2)) 
+```
+
+
+- Operador Produtório ($\prod$):
+
+```{r}
+prod(c(2, 3, 4))
+```
+
+
+```{r}
+cumprod(c(2, 3, 4))
+```
+
+
+
+
+## Simulação: Preço de uma Ação como Passeio Aleatório
+
+```{r}
+#| echo: false
+
+# Fixamos uma semente para tornar os resultados reproduzíveis
+# (isso nos permitirá obter os mesmos valores "aleatórios" em cada execução)
+set.seed(42)
+
+# Número de períodos a simular
+dias <- 1000  
+
+# Geramos os epsilon (ε_i) - as variáveis aleatórias que representam retornos diários
+# Na versão multiplicativa, cada epsilon representa uma variação percentual do preço
+# Usamos valores menores que na versão aditiva, pois agora representam percentuais
+epsilon <- rnorm(dias, mean = 0.0005, sd = 0.01)  # média de 0.05% e desvio-padrão de 1%
+
+# Preço inicial (P_0 na fórmula matemática)
+preco_inicial <- 100
+
+# Calculamos o passeio aleatório multiplicativo: P_n = P_0 * ∏(1 + ε_i)
+# Onde ∏ representa o produto acumulado (assim como ∑ representa soma acumulada)
+# A função cumprod() calcula esse produto acumulado: (1+ε₁), (1+ε₁)*(1+ε₂), etc.
+precos <- preco_inicial * cumprod(1 + epsilon)
+
+# Organizamos os dados para visualização
+dados_precos <- tibble(
+  dia = 1:dias,
+  preco = precos
+)
+
+# Visualizamos a trajetória do passeio aleatório multiplicativo
+ggplot(dados_precos, aes(x = dia, y = preco)) +
+  geom_line(color = "blue", size = 1) +
+  labs(title = "Simulação de Preço de Ativo: Passeio Aleatório Multiplicativo",
+       x = "Dias de Negociação", 
+       y = "Preço (R$)") +
+  theme_minimal()
+```
+
+
+
+
+## Exemplo: Preço da Ação da Petrobrás 
+
+```{r}
+#| echo: false
+
+# Carrega o pacote yfR (Yahoo Finance in R) 
+# facilita o download de dados financeiros do Yahoo Finance
+library(yfR)
+
+# Configura os parâmetros da consulta:
+# Ticker: código da ação na bolsa (PETR4.SA = Petrobras ações preferenciais)
+# Período: define intervalo de 1000 dias até hoje usando função Sys.Date()
+meu_ticker <- c('PETR4.SA')
+first_date <- Sys.Date() - 1000  # Data inicial (1000 dias atrás)
+last_date <- Sys.Date()          # Data final (hoje)
+
+# Obtém os dados históricos da ação utilizando a API do Yahoo Finance
+# Retorna dataframe com preços, volumes e outras informações
+df_petro <- yf_get(tickers = meu_ticker, 
+                   first_date = first_date,
+                   last_date = last_date)
+
+# Cria gráfico de linha da série temporal de preços ajustados
+ggplot(df_petro, aes(x = ref_date, y = price_adjusted)) + 
+  geom_line(color = "blue", size = 1) +            
+  labs(title = "Preços Diários da Ação da Petrobrás - PETR4.SA",
+       subtitle = "Período: Últimos 1000 dias",
+       caption = "Fonte: Yahoo Finance",
+       x = NULL,                                   
+       y = "Preço") +
+  theme_minimal() 
+```
+
+
+
+
+## Preços vs. Retornos com Dados Reais da Petrobrás
+
+```{r}
+#| echo: false
+
+# Preparar os dados da Petrobrás para a análise
+dados_petrobras <- df_petro %>%
+  # Garantir que os dados estão ordenados por data
+  arrange(ref_date) %>%
+  # Calcular os retornos diários percentuais
+  mutate(
+    retorno = c(NA, diff(price_adjusted) / price_adjusted[-length(price_adjusted)])
+  ) %>%
+  # Remover o primeiro valor NA dos retornos
+  filter(!is.na(retorno))
+
+# Criar visualização do preço ao longo do tempo
+p1 <- ggplot(dados_petrobras, aes(x = ref_date, y = price_adjusted)) +
+  geom_line(color = "blue", size = 1) +
+  labs(title = "Preços Diários da Ação da Petrobrás - PETR4.SA",
+       x = NULL, 
+       y = "Preço (R$)") +
+  theme_minimal()
+
+# Criar visualização dos retornos diários
+p2 <- ggplot(dados_petrobras, aes(x = ref_date, y = retorno)) +
+  geom_line(color = "darkred", size = 0.8) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Retornos Diários da Petrobrás- PETR4.SA",
+       caption = "Fonte: Yahoo Finance",
+       x = NULL, 
+       y = "Retorno Diário") +
+  theme_minimal()
+
+# Visualizar gráficos em uma coluna usando patchwork
+# O operador "/" coloca os gráficos um abaixo do outro
+p1 / p2
+```
+
+
+
+
+## Exercício 1
+
+Para cada uma das situações abaixo, identifique a variável aleatória 
+descrita, classifique-a como **discreta** ou **contínua**:
+
+1. O número mensal de cancelamentos de assinaturas em uma plataforma 
+de streaming
+
+**Resposta:** 
+
+2. O tempo de entrega (em horas) para pedidos online de uma loja de 
+e-commerce
+
+**Resposta:** 
+
+3. A variação percentual diária no preço das ações de uma empresa
+
+**Resposta:** 
+
+4. O número de unidades vendidas de um novo produto no primeiro mês 
+após seu lançamento
+
+**Resposta:** 
+
+
+
+
+## Exercício 2
+
+Seguindo o exemplo apresentado na aula sobre o preço da ação da 
+Petrobrás (PETR4.SA), realize uma análise semelhante para outra 
+empresa brasileira de sua escolha. Utilize o pacote yfR conforme 
+demonstrado para baixar os dados dos últimos 200 dias de negociação.
+
+1. Escolha uma empresa brasileira listada na B3 e 
+descubra seu *ticker* (símbolo da ação)
+
+2. Utilize o código apresentado na aula como referência para baixar 
+  os dados históricos de preços usando o pacote yfR.
+
+3. Crie um gráfico da série de preços ajustados ao longo do tempo. 
+
+
+```{r}
+# seu código aqui
+```
+
+
+
+
+# Distribuições de Probabilidade Teóricas
+
+
+
+## Simula $X \sim N(\mu = 3, \sigma = 1)$
+
+- Vamos simular uma VA $X$ com distribuição normal com média $\mu = 3$ e 
+desvio-padrão $\sigma = 1$.
+
+- Vamos gerar 1000 observações dessa VA e plotar o histograma dos dados.
+
+- Em seguida, vamos fazer um histograma com densidade empírica 
+sobreposta para os dados simulados e verificar se a distribuição se 
+aproxima da distribuição normal teórica.
+
+
+
+```{r}
+# fixa a semente do gerador de numeros aleatórios
+set.seed(123)
+
+# simula 1000 observações de uma VA Normal com media 3 e desvio padrao 1
+x_simulada <- rnorm(1000, mean = 3, sd = 1)
+head(x_simulada)
+```
+
+```{r}
+# media 
+mean(x_simulada)
+```
+
+```{r}
+# desvio padrao
+sd(x_simulada)
+```
+
+
+
+
+## Simulação de uma VA com Distribuição Normal
+
+```{r}
+df <- data.frame(x_simulada)
+
+# regra de Freedman-Diaconis para calcular o binwidth
+iqr_valores <- IQR(df$x_simulada)
+n <- length(df$x_simulada)
+binwidth_fd = 2 * iqr_valores / (n^(1/3))
+
+# histograma com densidade empirica
+ggplot(df, aes(x = x_simulada)) +
+  geom_histogram(
+    aes(y = after_stat(density)), 
+    binwidth = binwidth_fd, 
+    color = "black",
+    fill = "skyblue") +
+  geom_density(col = "red", size = 2) + 
+  labs(title = expression("Dados simulados da VA: " * X %~% N(mu == 3, sigma == 1)), 
+     x = "X Simulada",
+     y = "Densidade") +
+theme_minimal()
+```
+
+
+
+
+## Simula $Z = \frac{X - \mu}{\sigma} \sim N(\mu = 0, \sigma = 1)$
+
+- Vamos gerar 1000 observações dessa VA e plotar um histograma com a 
+densidade empírica sobreposta dos dados.
+
+- Em seguida, vamos fazer um histograma com densidade empírica 
+sobreposta para os dados simulados e verificar se a distribuição se 
+aproxima da distribuição normal teórica:
+
+
+```{r}
+#| echo: true
+set.seed(123)
+
+z_simulada <- rnorm(1000, mean = 0, sd = 1)
+head(z_simulada)
+```
+
+
+
+Simulação de uma VA com Distribuição Normal Padronizada
+
+```{r}
+#| echo: false
+
+df2 <- data.frame(z_simulada)
+
+# regra de Freedman-Diaconis para calcular o binwidth
+iqr_valores <- IQR(df2$z_simulada)
+n <- length(df2$z_simulada)
+binwidth_fd = 2 * iqr_valores / (n^(1/3))
+
+# histograma com densidade empirica
+ggplot(df2, aes(x = z_simulada)) +
+  geom_histogram(
+    aes(y = after_stat(density)), 
+    binwidth = binwidth_fd, 
+    color = "black",
+    fill = "skyblue") +
+  geom_density(col = "red", size = 2) + 
+  labs(title = expression("Dados simulados da VA: " * Z %~% N(mu == 0, sigma == 1)), 
+     x = "Z Simulada",
+     y = "Densidade") +
+theme_minimal()
+```
+
+
+
+
+
+
+## Exercício 1
+
+**Cenário**: A distribuição dos retornos mensais de uma ação segue 
+aproximadamente uma distribuição normal com média de 1% e 
+desvio-padrão de 3% ($R \sim N(\mu = 0.001, \sigma = 0.03)$).
+
+
+1. Qual a probabilidade de sofrer uma perda mensal inferior a 4%? 
+Ou seja, encontre $P(R < - 0.04)$.
+
+
+```{r}
+# seu código aqui
+```
+
+
+2. Qual a probabilidade de obter um retorno positivo no próximo mês? Ou 
+seja encontre $P(R > 0)$.
+
+```{r}
+# seu código aqui
+```
+
+
+3. Qual a probabilidade de obter um retorno superior a 5%? 
+Ou seja, encontre $P(R > 0.05)$.
+
+```{r}
+# seu código aqui
+```
+
+
+
+## Exercício 2
+
+**Cenário**: O departamento de vendas de uma rede varejista analisou 
+dados históricos e determinou que as vendas diárias de seu produto 
+mais popular seguem aproximadamente uma distribuição normal com 
+média de R$ 12.000 e desvio-padrão de R$ 2.500 
+($V \sim N(\mu = 12000, \sigma = 2500)$).
+
+1. Qual a probabilidade de que em um determinado dia as vendas 
+excedam R\$ 15.000? Ou seja, encontre $P(V > 15000)$.
+
+```{r}
+# seu código aqui
+```
+
+
+2. O departamento de operações precisa garantir estoque suficiente 
+para atender a demanda em dias de alto volume de vendas. Se eles 
+desejam ter estoque suficiente para atender 95% dos dias, qual 
+deveria ser o valor mínimo de vendas para o qual eles devem 
+se preparar? Ou seja, encontre o valor $y$ tal que $P(V < y) = 0.95$.
+
+```{r}
+# seu código aqui
+```
+
+
+3. Para fins de planejamento financeiro, o gestor precisa determinar 
+o valor mínimo de vendas diárias que pode ser esperado com 90% 
+de probabilidade. Ou seja, encontre o valor $x$ tal que $P(V > x) = 0.90$.
+
+```{r}
+# seu código aqui
+```
+
+
+
+
+# Características da Distribuição de Probabilidade de Variáveis Aleatórias 
+
+
+
+
+
+## Função `sample()` em R
+
+- Em R, a função `sample()` executa a amostragem aleatória simples
+ a partir de uma listagem da "população", sendo útil em simulações.
+ 
+- Ilustraremos a amostragem aleatória simples em R com um exemplo de 
+auditoria. 
+
+- Suponha que um auditor deve auditar as 10.000 
+faturas de vendas emitidas por uma empresa. Utilizando métodos 
+estatísticos ele calculou que uma amostra de tamanho 20 seria 
+suficiente (seria?). 
+
+- Considere ainda que o auditor possui uma listagem 
+numerada (de 1 a 10.000) de todas as 10.000 faturas emitidas. 
+
+- Para extrair uma AAS desta população, basta utilizar a 
+função `sample()` da seguinte forma:
+
+```{r}
+# fixa a semente do gerador de numeros aleatórios
+set.seed(123)
+
+# listagem da populacao de faturas
+listagem_populacao <- 1:1000
+
+# extrai uma ASS com n = 20 da populacao, sem reposição.
+sample(listagem_populacao,20)
+```
+
+- A AAS de tamanho 20 selecionou as faturas de números exibidos 
+acima.
+
+
+
+
+
+## Valor Esperado: Simulação em R
+
+
+Verificação empírica via simulação:
+
+```{r}
+# Definir o número de lançamentos
+lancamentos <- 10000
+
+# Simular os lançamentos do dado
+set.seed(123) # Para reprodutibilidade
+dado <- c(1, 2, 3, 4, 5, 6)
+resultado_dados <- sample(dado, lancamentos, replace = TRUE)
+
+# Calcular o valor esperado (média do número voltado para cima)
+media_empirica <- mean(resultado_dados)
+media_empirica
+```
+
+**Observação**: À medida que aumentamos o número de lançamentos, a média 
+empírica se aproxima do valor esperado teórico de 3,5.
+
+Esta convergência é explicada pela *Lei dos Grandes Números*: à medida que o 
+número de AA aumenta, a média dos resultados convergirá para o valor 
+esperado (média teórica).
+
+
+
+## Exemplo: Retorno Esperado de Investimento
+
+Uma empresa analisa um investimento com os seguintes cenários:
+
+| Cenário    | Retorno (R$) | Probabilidade |
+|------------|--------------|---------------|
+| Pessimista | -50.000      | 0,2           |
+| Moderado   | 100.000      | 0,5           |
+| Otimista   | 300.000      | 0,3           |
+
+**Cálculo do Valor Esperado:**
+
+$$
+\begin{align}
+E(X) &= -50.000 \times 0,2 + 100.000 \times 0,5 + 300.000 \times 0,3 \\
+     &= -10.000 + 50.000 + 90.000 \\
+     &= 130.000
+\end{align}
+$$
+
+**Interpretação**: O retorno médio esperado é de R$ 130.000, considerando 
+todos os cenários possíveis ponderados por suas probabilidades.
+
+
+
+## Valor Esperado: Implementação e Simulação em R
+
+
+```{r}
+# Definir os dados do exemplo de investimento
+retornos <- c(-50000, 100000, 300000)
+probabilidades <- c(0.2, 0.5, 0.3)
+
+# Cálculo do valor esperado
+valor_esperado <- sum(retornos * probabilidades)
+valor_esperado
+
+# Simulação para verificação empírica
+set.seed(123)  # Para reprodutibilidade
+n_simulacoes <- 10000
+indices <- sample(1:3, size = n_simulacoes, prob = probabilidades, replace = TRUE)
+retornos_simulados <- retornos[indices]
+media_empirica <- mean(retornos_simulados)
+media_empirica
+```
+
+
+## Explicação do Código
+
+Esta simulação reproduz o processo aleatório de um investimento com três 
+possíveis resultados, cada um com sua própria probabilidade de ocorrência. 
+Vamos entender como isso funciona passo a passo:
+
+1. **Preparação dos dados**: Primeiro definimos os possíveis retornos 
+(-50000, 100000, 300000) e suas respectivas probabilidades (20%, 50% e 30%).
+
+2. **Cálculo teórico**: Calculamos o valor esperado teoricamente 
+multiplicando cada retorno por sua probabilidade e somando os resultados.
+
+3. **O processo de simulação**: O objetivo é simular como seria investir 
+repetidamente neste cenário aleatório.
+
+4. **A função `sample(1:3, ...)`**: 
+
+   - O argumento `1:3` cria um vetor com os números 1, 2 e 3
+   - Estes números representam as posições (ou índices) no vetor `retornos`
+   - Não estamos sorteando os retornos diretamente, mas sim suas posições
+
+5. **O sorteio dos índices**:
+
+   - Sorteamos 10.000 índices aleatórios (1, 2 ou 3)
+   - O índice 1 tem 20% de chance de ser sorteado
+   - O índice 2 tem 50% de chance de ser sorteado
+   - O índice 3 tem 30% de chance de ser sorteado
+   - O parâmetro `replace=TRUE` permite que o mesmo índice seja sorteado 
+     múltiplas vezes
+
+6. **Acesso aos retornos**:
+
+   - `retornos[indices]` usa os índices sorteados para acessar os valores 
+     correspondentes no vetor `retornos`
+   - Se sorteamos o índice 1, pegamos o valor -0.05 (ou -5%)
+   - Se sorteamos o índice 2, pegamos o valor 0.10 (ou 10%)
+   - Se sorteamos o índice 3, pegamos o valor 0.25 (ou 25%)
+
+7. **Cálculo empírico**: Calculamos a média dos 10.000 retornos simulados, 
+que deve se aproximar do valor esperado teórico.
+
+Esta técnica de simulação é muito importante em finanças porque nos 
+permite "experimentar" virtualmente um investimento milhares de vezes, 
+observando não apenas a média dos resultados (valor esperado), mas também 
+sua distribuição, variabilidade e comportamento. À medida que aumentamos 
+o número de simulações, a média empírica converge para o valor esperado 
+teórico, conforme previsto pela Lei dos Grandes Números.
+
+
+
+
+
+
+
+## Aplicação do Valor Esperado - Exemplo
+
+Uma seguradora oferece seguros para danos residenciais causados por 
+incêndios. Com base em dados históricos, a empresa determinou o 
+seguinte:
+
+- A probabilidade de ocorrer um incêndio em uma residência segurada durante 
+um ano é de 0,01.
+
+- O valor médio da indenização paga em caso de incêndio é de R$ 150.000.
+
+A seguradora deseja calcular o prêmio anual que deve ser cobrado para cobrir 
+os riscos de incêndio, considerando uma margem de 25% para cobrir custos 
+administrativos e obter lucro.
+
+Perguntas:
+
+a. Calcule o valor esperado das indenizações que a seguradora terá que pagar 
+por residência segurada em um ano.
+
+b. Determine o prêmio anual que a seguradora deve cobrar por residência 
+segurada.
+
+c. Escreva um código em R para realizar esses cálculos.
+
+
+- Usando R:
+
+```{r}
+# Definir os parâmetros
+probabilidade_incendio <- 0.01
+valor_medio_indenizacao <- 150000
+margem <- 0.25
+
+# Calcular o valor esperado das indenizações
+valor_esperado_indenizacao <- probabilidade_incendio * valor_medio_indenizacao
+valor_esperado_indenizacao
+
+# Calcular o prêmio anual com a margem
+premio_anual <- valor_esperado_indenizacao * (1 + margem)
+premio_anual
+```
+
+
+1. **Valor Esperado das Indenizações**:
+
+$$
+E(X) = P(\text{incêndio}) \times \text{valor médio da indenização}
+$$
+
+Substituindo os valores:
+
+$$
+E(X) = 0,01 \times 150.000 = R$ 1.500
+$$
+
+2. **Prêmio Anual**:
+
+Para incluir a margem de 25%:
+
+$$
+\text{Prêmio} = E(X) \times (1 + \text{margem})
+$$
+
+Substituindo os valores:
+
+$$
+\text{Prêmio} = 1.500 \times (1 + 0.25) = 1.500 \times 1.25 = R$ 1.875
+$$
+
+
+
+## Exercício 1
+
+Uma empresa precisa escolher entre dois projetos de investimento com 
+os seguintes fluxos de caixa projetados:
+
+**Projeto A**:
+
+- Investimento inicial: R$200.000
+- Cenários de retorno:
+  - Baixo: R$220.000 (probabilidade 0,3)
+  - Médio: R$280.000 (probabilidade 0,4)
+  - Alto: R$320.000 (probabilidade 0,3)
+
+**Projeto B**:
+
+- Investimento inicial: R$200.000
+- Cenários de retorno:
+  - Baixo: R$180.000 (probabilidade 0,2)
+  - Médio: R$260.000 (probabilidade 0,5)
+  - Alto: R$400.000 (probabilidade 0,3)
+
+**Perguntas**:
+
+1. Calcule o valor esperado do lucro líquido de cada projeto.
+2. Baseado apenas no valor esperado, qual projeto seria escolhido?
+3. Que outras informações seriam úteis para tomar esta decisão?
+
+
+
+
+
+
+
+
+
+
+
+
