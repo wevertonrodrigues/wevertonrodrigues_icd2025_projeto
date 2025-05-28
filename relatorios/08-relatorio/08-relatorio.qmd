@@ -191,21 +191,25 @@ descrita, classifique-a como **discreta** ou **contínua**:
 1. O número mensal de cancelamentos de assinaturas em uma plataforma 
 de streaming
 
-**Resposta:** 
+**Variável aleatória: número de cancelamentos
+Tipo: Discreta (valores inteiros e contáveis)** 
 
 2. O tempo de entrega (em horas) para pedidos online de uma loja de 
 e-commerce
 
-**Resposta:** 
+**Variável aleatória: tempo de entrega
+Tipo: Contínua (pode assumir frações de hora, como 12,5h)** 
 
 3. A variação percentual diária no preço das ações de uma empresa
 
-**Resposta:** 
+**Variável aleatória: variação percentual diária
+Tipo: Contínua (pode assumir qualquer valor real dentro de um intervalo)** 
 
 4. O número de unidades vendidas de um novo produto no primeiro mês 
 após seu lançamento
 
-**Resposta:** 
+**Variável aleatória: unidades vendidas
+Tipo: Discreta (valores inteiros, contáveis)** 
 
 
 
@@ -227,7 +231,29 @@ descubra seu *ticker* (símbolo da ação)
 
 
 ```{r}
-# seu código aqui
+# library(yfR)
+library(ggplot2)
+library(dplyr)
+
+# Define o ticker da empresa (Magazine Luiza)
+ticker <- "MGLU3.SA"
+
+# Baixa os dados dos últimos 200 dias úteis
+dados_mglu3 <- yf_get(ticker, first_date = Sys.Date() - 365, last_date = Sys.Date())
+
+# Visualiza os primeiros dados
+head(dados_mglu3)
+
+# Cria o gráfico de preços ajustados
+ggplot(dados_mglu3, aes(x = ref_date, y = price_adjusted)) +
+  geom_line(color = "steelblue", linewidth = 1) +
+  labs(
+    title = "Preço Ajustado das Ações - MGLU3.SA",
+    x = "Data",
+    y = "Preço Ajustado (R$)"
+  ) +
+  theme_minimal()
+
 ```
 
 
@@ -362,7 +388,19 @@ Ou seja, encontre $P(R < - 0.04)$.
 
 
 ```{r}
-# seu código aqui
+# Média e desvio-padrão dos retornos mensais
+media <- 0.01     # 1%
+desvio <- 0.03    # 3%
+
+# Valor alvo da perda
+retorno_alvo <- -0.04
+
+# Cálculo da probabilidade P(R < -0.04)
+probabilidade <- pnorm(retorno_alvo, mean = media, sd = desvio)
+
+# Exibe o resultado formatado
+cat("A probabilidade de sofrer uma perda mensal inferior a 4% é de", round(probabilidade * 100, 2), "%\n")
+
 ```
 
 
@@ -370,7 +408,16 @@ Ou seja, encontre $P(R < - 0.04)$.
 seja encontre $P(R > 0)$.
 
 ```{r}
-# seu código aqui
+## Média e desvio-padrão dos retornos mensais
+media <- 0.01     # 1%
+desvio <- 0.03    # 3%
+
+# Cálculo da probabilidade de retorno positivo: P(R > 0)
+prob_positivo <- 1 - pnorm(0, mean = media, sd = desvio)
+
+# Exibe o resultado formatado
+cat("A probabilidade de obter um retorno positivo no próximo mês é de", round(prob_positivo * 100, 2), "%\n")
+
 ```
 
 
@@ -378,7 +425,19 @@ seja encontre $P(R > 0)$.
 Ou seja, encontre $P(R > 0.05)$.
 
 ```{r}
-# seu código aqui
+# Média e desvio-padrão dos retornos mensais
+media <- 0.01     # 1%
+desvio <- 0.03    # 3%
+
+# Valor alvo
+retorno_alvo <- 0.05
+
+# Cálculo da probabilidade P(R > 0.05)
+probabilidade <- 1 - pnorm(retorno_alvo, mean = media, sd = desvio)
+
+# Exibe o resultado formatado
+cat("A probabilidade de obter um retorno superior a 5% é de", round(probabilidade * 100, 2), "%\n")
+
 ```
 
 
@@ -395,7 +454,19 @@ média de R$ 12.000 e desvio-padrão de R$ 2.500
 excedam R\$ 15.000? Ou seja, encontre $P(V > 15000)$.
 
 ```{r}
-# seu código aqui
+# Média e desvio-padrão das vendas diárias
+media <- 12000
+desvio <- 2500
+
+# Valor alvo
+vendas_alvo <- 15000
+
+# Cálculo da probabilidade P(V > 15000)
+probabilidade <- 1 - pnorm(vendas_alvo, mean = media, sd = desvio)
+
+# Exibe o resultado
+cat("A probabilidade de que as vendas excedam R$ 15.000 em um dia é de", round(probabilidade * 100, 2), "%\n")
+
 ```
 
 
@@ -406,7 +477,16 @@ deveria ser o valor mínimo de vendas para o qual eles devem
 se preparar? Ou seja, encontre o valor $y$ tal que $P(V < y) = 0.95$.
 
 ```{r}
-# seu código aqui
+# Média e desvio-padrão das vendas diárias
+media <- 12000
+desvio <- 2500
+
+# Cálculo do percentil 95: valor de y tal que P(V < y) = 0.95
+y <- qnorm(0.95, mean = media, sd = desvio)
+
+# Exibe o resultado
+cat("Para atender 95% dos dias, o estoque deve cobrir vendas de até R$", round(y, 2), "\n")
+
 ```
 
 
@@ -415,7 +495,16 @@ o valor mínimo de vendas diárias que pode ser esperado com 90%
 de probabilidade. Ou seja, encontre o valor $x$ tal que $P(V > x) = 0.90$.
 
 ```{r}
-# seu código aqui
+# Média e desvio-padrão das vendas diárias
+media <- 12000
+desvio <- 2500
+
+# Cálculo do valor x tal que P(V > x) = 0.90 → P(V < x) = 0.10
+x <- qnorm(0.10, mean = media, sd = desvio)
+
+# Exibe o resultado
+cat("Com 90% de probabilidade, as vendas diárias estarão acima de R$", round(x, 2), "\n")
+
 ```
 
 

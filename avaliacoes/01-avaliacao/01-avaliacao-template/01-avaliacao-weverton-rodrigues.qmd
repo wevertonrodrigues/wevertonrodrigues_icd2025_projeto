@@ -22,7 +22,6 @@ crossref:
   tbl-prefix: 'Tab.'
 ---
 
-
 ```{r}
 #| label: setup
 #| echo: false
@@ -36,25 +35,19 @@ library(tidyverse)
 library(kableExtra)
 ```
 
-
-
-## Questão 1 
-
+## Questão 1
 
 **a)**
 
 Identificar qual método de pagamento está associado ao melhor faturamento por cliente, para melhorar as campanhas de marketing.
 
-
-**b)** 
+**b)**
 
 Recomendo a análise descritiva, pois ela permite entender melhor os dados dos clientes, como idade, forma de pagamento e devoluções. Isso ajuda a equipe de marketing a ter uma visão geral antes de tomar decisões mais estratégicas.
 
+## Questão 2
 
-## Questão 2 
-
-
-**a)** 
+**a)**
 
 ```{r}
 
@@ -69,29 +62,26 @@ dados_lojaonline <- readr::read_csv(caminho_arquivo)
 
 ```
 
-
-**b)** 
+**b)**
 
 ```{r}
 
 dplyr::glimpse(dados_lojaonline)
 ```
 
-
-**c.1)** 
+**c.1)**
 
 Existem 463 observações
 
-**c.2)** 
+**c.2)**
 
 Cada linha da tabela representa uma visita de um cliente à loja virtual da destilaria. Em cada uma, temos informações como a idade e o sexo da pessoa, o tipo de cliente, como ela pagou, quanto gastou, se devolveu algum produto, se viu propaganda em vídeo, entre outros detalhes.
 
-
 ## Questão 3 (8 pontos)
 
-### Tópico: Limpeza e Preparação dos Dados 
+### Tópico: Limpeza e Preparação dos Dados
 
-**a)** 
+**a)**
 
 ```{r}
 dados_lojaonline_limpos <- dados_lojaonline %>% 
@@ -128,8 +118,7 @@ dplyr::glimpse(dados_lojaonline_limpos)
 
 ```
 
-
-**b)** 
+**b)**
 
 ```{r}
 
@@ -137,30 +126,25 @@ summary(dados_lojaonline_limpos)
 
 ```
 
-
-**b.1)** 
+**b.1)**
 
 ron_swanson76, ela teve 15 transações
 
-**b.2)** 
+**b.2)**
 
 116 clientes não foram classificados.
 
-**b.3)** 
+**b.3)**
 
-- Faturamento médio = 182
+-   Faturamento médio = 182
 
-- Faturamento máximo = 718
+-   Faturamento máximo = 718
 
-- Faturamento mínimo = 31
-
-
+-   Faturamento mínimo = 31
 
 ## Questão 4 (10 pontos)
 
- 
-**a)** 
-
+**a)**
 
 ```{r}
 
@@ -174,10 +158,7 @@ faturamento_medio_pagamento
 
 ```
 
-
-
-**b)** 
-
+**b)**
 
 ```{r}
 
@@ -192,10 +173,7 @@ clientes_especificos
 
 ```
 
-
-
-**c)** 
-
+**c)**
 
 ```{r}
 
@@ -212,10 +190,7 @@ dados_conversao
 
 ```
 
-
-
-**d)** 
-
+**d)**
 
 ```{r}
 
@@ -233,8 +208,3 @@ analise_tipo_cliente
 
 
 ```
-
-
-
-
-
