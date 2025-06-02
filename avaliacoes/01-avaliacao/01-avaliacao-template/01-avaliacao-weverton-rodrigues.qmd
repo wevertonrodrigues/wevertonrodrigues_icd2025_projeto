@@ -23,6 +23,19 @@ crossref:
 ---
 
 ```{r}
+#| label: configurar-tempdir
+#| echo: false
+#| include: false
+
+# Define um diretório temporário alternativo para evitar erros com acentos no nome do usuário
+tempdir_custom <- "C:/TempR"
+dir.create(tempdir_custom, showWarnings = FALSE)
+Sys.setenv(TMPDIR = tempdir_custom)
+Sys.setenv(TEMP = tempdir_custom)
+Sys.setenv(TMP = tempdir_custom)
+```
+
+```{r}
 #| label: setup
 #| echo: false
 
@@ -56,7 +69,7 @@ Recomendo a análise descritiva, pois ela permite entender melhor os dados dos c
 ## 1.1 Define o caminho relativo do arquivo em seu projeto RStudio
 caminho_arquivo <- here::here("dados", "brutos", "onlineshop", "onlineshop.csv")
 
-## 1.2 Importa o arquivo com a funçào read_csv
+## 1.2 Importa o arquivo com a função read_csv
 
 dados_lojaonline <- readr::read_csv(caminho_arquivo)
 
@@ -136,11 +149,9 @@ ron_swanson76, ela teve 15 transações
 
 **b.3)**
 
--   Faturamento médio = 182
-
--   Faturamento máximo = 718
-
--   Faturamento mínimo = 31
+- Faturamento médio = 182  
+- Faturamento máximo = 718  
+- Faturamento mínimo = 31  
 
 ## Questão 4 (10 pontos)
 
@@ -205,6 +216,5 @@ analise_tipo_cliente <- dados_lojaonline_limpos %>%
 
 # exibe o resultado 
 analise_tipo_cliente
-
 
 ```
