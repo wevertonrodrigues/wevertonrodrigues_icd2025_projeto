@@ -1,0 +1,303 @@
+---
+title: "Soluções da Lista de Exercícios - Treinamento para a Avaliação 2"
+subtitle: "Introdução à Ciência de Dados <br> Bacharelado em administração"
+author: "Prof. Dr. Washington S. da Silva"
+title-block-banner: "#27445C"
+format:
+  html:
+    embed-resources: true
+    toc: true
+    toc-location: left
+    code-copy: true
+    css: styles.css
+lang: "pt"
+date: 2025-06-13
+execute: 
+  echo: true
+  warning: false
+  message: false
+---
+
+```{r}
+#| label: setup
+#| echo: false
+
+# configura exibição de números
+options(digits = 5, scipen = 999)
+
+# carrega pacotes
+library(tidyverse)  # Inclui dplyr, tidyr, ggplot2...
+library(scales)     # pacote do tidyverse para formatação de números
+library(tidyquant)  # para importar dados do Yahoo Finance
+```
+
+
+
+## Tópico: Distribuição Normal — Probabilidades e Quantis
+
+### Exercício 1
+
+
+
+## Solução do Exercício 1
+
+1. Qual a probabilidade de um pedido ser entregue em até **7 dias**?
+
+```{r}
+resultado1 <- pnorm(7, mean = 5, sd = 2) * 100
+resultado1
+```
+
+2. Qual a probabilidade de a entrega demorar **mais de 10 dias**?
+
+```{r}
+resultado2 <- (1 - pnorm(10, mean = 5, sd = 2)) * 100
+resultado2
+```
+
+3. Qual é o prazo máximo de entrega para que **80%** dos pedidos sejam 
+entregues até essa data?
+
+```{r}
+prazo_80 <- qnorm(0.80, mean = 5, sd = 2)
+prazo_80
+```
+
+
+4. Forneça uma interpretação para os resultados obtidos em cada item.
+
+
+  1 - 84,13% dos pedidos chegam em até 7 dias.
+
+  2 - Só 0,62% demoram mais de 10 dias pra chegar.
+
+  3 - Se a loja prometer entrega em até 6,68 dias, 80% dos pedidos vão chegar dentro do prazo.
+
+
+## Tópico: Valor-em-Risco (VaR) com Distribuição Normal
+
+### Exercício 2
+
+
+```{r}
+quantil_5 <- qnorm(0.05)  # ≈ -1.645
+quantil_5 
+```
+
+
+Cálculo do VaR percentual:
+
+```{r}
+media <- 0.01        # retorno médio (1%)
+volatilidade <- 0.04 # volatilidade (4%)
+conf <- 0.05         # 5% de cauda, pois 95% de confiança
+
+VaR_percentual <- qnorm(conf, mean = media, sd = volatilidade) * 100
+VaR_percentual
+```
+
+VaR em reais (valor absoluto da perda):
+
+```{r}
+investimento <- 50000
+VaR_reais <- investimento * abs(VaR_percentual) / 100
+VaR_reais
+```
+
+ 
+**Interpretação:**
+
+
+  Na prática, isso significa que, em um mês ruim, o investidor tem 5% de chance de perder mais de R$ 2.788,68 nesse fundo. Normalmente, a perda não passa desse valor, mas pode acontecer de vez em quando.
+
+
+## Tópico: Simulação de Monte Carlo e Valor Esperado
+
+### Exercício 3
+
+1. Calcule o prêmio **justo** (valor esperado).
+
+```{r}
+prob <- 0.02
+indenizacao <- 4000
+
+premio_justo <- prob * indenizacao
+premio_justo
+
+```
+
+2. Determine o prêmio com a margem de lucro.
+
+```{r}
+premio_com_margem <- premio_justo * 1.2
+premio_com_margem
+
+```
+
+3. Simule 10.000 residências seguradas e estime o valor médio pago.
+
+```{r}
+set.seed(42)
+n_simulacoes <- 10000
+roubos <- rbinom(n_simulacoes, size = 1, prob = prob)
+valor_pago_medio <- mean(roubos) * indenizacao
+valor_pago_medio
+
+```
+
+
+**Interpretação:**
+
+
+
+
+## Tópico: Quantis e Tomada de Decisão em Administração
+
+### Exercício 4
+
+Os salários de 30 trainees são (execute o código abaixo para criar 
+o vetor `salarios`):
+
+```{r}
+salarios <- c(2300, 2500, 2200, 2400, 2800, 3000, 3200, 2500, 2100, 2700,
+              2600, 2300, 2900, 3100, 2000, 2800, 2600, 2500, 2750, 2250,
+              2900, 2300, 2600, 2700, 2950, 2450, 2550, 2650, 2400, 2750)
+```
+
+
+1. Calcule os quartis 1 (Q1), 2 (mediana) e 3 (Q3).
+
+```{r}
+salarios <- c(2300, 2500, 2200, 2400, 2800, 3000, 3200, 2500, 2100, 2700,
+              2600, 2300, 2900, 3100, 2000, 2800, 2600, 2500, 2750, 2250,
+              2900, 2300, 2600, 2700, 2950, 2450, 2550, 2650, 2400, 2750)
+
+Q1 <- quantile(salarios, 0.25)
+Q2 <- quantile(salarios, 0.50) # mediana
+Q3 <- quantile(salarios, 0.75)
+
+Q1  # 25% ganham até esse valor
+Q2  # metade ganha até esse valor (mediana)
+Q3  # 75% ganham até esse valor
+
+```
+
+2. Qual o salário máximo que **80%** dos trainees recebem?
+
+Estimativa do percentil 80:
+
+```{r}
+percentil_80 <- quantile(salarios, 0.80)
+percentil_80
+  
+```
+
+
+3. Como essas informações podem auxiliar o setor de RH?
+
+  Essas informações ajudam o RH a enxergar como os salários estão distribuídos entre os trainees. Assim, fica mais fácil identificar se alguém está ganhando muito acima ou abaixo dos colegas, ajustar faixas salariais, pensar em promoções e garantir que todo mundo está sendo pago de forma justa e equilibrada. Além disso, saber o valor que a maioria recebe ajuda na hora de negociar novas contratações ou planejar aumentos.
+
+
+## Tópico: Correlação e Diversificação de Carteiras
+
+### Exercício 5
+
+1. Use `tq_get()` para baixar as séries de preços das ações da Vale 
+(VALE3) e do Bradesco (BBDC4) desde `2024-01-01`
+
+```{r}
+library(tidyquant)
+
+# Baixar os preços das ações desde 2024-01-01
+dados_acoes <- tq_get(c("VALE3.SA", "BBDC4.SA"),
+                      from = "2024-01-01",
+                      get = "stock.prices")
+
+# Visualizar os primeiros registros
+head(dados_acoes)
+
+```
+
+2. Organize os dados com `pivot_wider()`.
+
+```{r}
+library(tidyr)
+library(dplyr)
+
+# Seleciona apenas as colunas relevantes
+dados_wide <- dados_acoes %>%
+  select(date, symbol, close) %>%
+  pivot_wider(
+    names_from = symbol,
+    values_from = close
+  )
+
+# Visualiza as primeiras linhas
+head(dados_wide)
+
+```
+
+3. Calcule a **correlação de Pearson** entre os preços e 
+interprete sua magnitude usando os critérios propostos 
+por Cohen (1988).
+
+Estimativa do coeficiente de correlação de Pearson:
+
+```{r}
+# Calculando a correlação de Pearson entre VALE3.SA e BBDC4.SA
+correlacao <- cor(dados_wide$VALE3.SA, dados_wide$BBDC4.SA, use = "complete.obs")
+correlacao
+
+```
+
+Interpretação da magnitude usando a função interpret_r do pacote 
+effectsize:
+
+```{r}
+library(effectsize)
+
+# Calcula a correlação de Pearson
+correlacao <- cor(dados_wide$VALE3.SA, dados_wide$BBDC4.SA, use = "complete.obs")
+
+# Interpreta a magnitude segundo Cohen (1988)
+interpretacao <- interpret_r(correlacao)
+interpretacao
+
+```
+
+**Interpretação:**
+
+
+
+4. Crie um gráfico de dispersão com reta de regressão para as 
+séries de preços e interprete do gráfico considerando o coeficiente de 
+correlação de Pearson estimado
+
+```{r}
+library(ggplot2)
+
+ggplot(dados_wide, aes(x = VALE3.SA, y = BBDC4.SA)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, linewidth = 1.2) +
+  labs(
+    title = "Dispersão dos Preços: VALE3 vs BBDC4",
+    x = "Preço de Fechamento VALE3",
+    y = "Preço de Fechamento BBDC4"
+  ) +
+  theme_minimal()
+
+```
+
+
+**Interpretação:**
+
+
+5. Avalie se uma carteira formada por essas duas ações poderia ser 
+considerada bem diversificada, com base na correlação estimada e 
+na análise do gráfico de dispersão.
+
+
+
+**Interpretação:**
+
+Se as duas ações se comportam de forma parecida, como mostra a correlação alta e o gráfico, a carteira não fica bem diversificada. Isso porque, se uma cair, a outra provavelmente também cai. O ideal é misturar ativos que se comportam de jeito diferente pra diminuir o risco.
