@@ -1,0 +1,411 @@
+---
+title: "Avaliação 2 - Valor: 33 pontos"
+subtitle: "Introdução à Ciência de Dados - 2025 <br> Bacharelado em Administração"
+author:   
+  - Membro 1 - Pedro Dias Gomides
+  - Membro 2 - Thiago Augusto Silva Vital
+  - Membro 3 - Weverton de Oliveira Rodrigues
+title-block-banner: "#27445C"
+format:
+  html:
+    embed-resources: true
+    page-layout: article
+    toc: true
+    toc-location: left
+lang: "pt"
+date: 2025-06-18
+date-format: long
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+
+```{r}
+#| label: setup
+#| echo: false
+
+# pacotes utilizados
+library(here)
+library(tidyverse)
+library(tidyquant)
+library(effectsize)
+```
+
+
+
+## Questão 1
+
+**a)**
+
+```{r}
+# Item a)
+prob_sinistro <- 0.01
+valor_indenizacao <- 150000
+
+# Prêmio puro = valor esperado por residência
+premio <- prob_sinistro * valor_indenizacao
+premio
+```
+
+
+**b)**
+
+```{r}
+# Item b)
+margem <- 0.25
+
+# Prêmio comercial = prêmio puro + 25%
+premio_comercial <- premio * (1 + margem)
+premio_comercial
+```
+
+
+**c)** 
+
+Simulação dos custos médios com 10 residências seguradas:
+
+```{r}
+## fixa a semente para reprodutibilidade
+set.seed(2025)
+
+## simula o custo para 10 residências seguradas
+custos_10 <- sample(
+  c(0, 150000),       # sem sinistro e com sinistro
+  size = 10,          # número de residências
+  replace = TRUE,     # com reposição
+  prob = c(0.99, 0.01) # probabilidade de cada evento
+) 
+
+## estimativa do custo médio por apólice com 10 residências seguradas
+mean(custos_10)
+```
+
+
+Simulação dos custos médios com 100 residências seguradas:
+
+```{r}
+## fixa a semente para reprodutibilidade
+set.seed(2025)
+
+## simula o custo para 100 residências seguradas
+custos_100 <- sample(
+  c(0, 150000),
+  size = 100,
+  replace = TRUE,
+  prob = c(0.99, 0.01)
+) 
+
+## estimativa do custo médio por apólice com 100 residências seguradas
+mean(custos_100)
+```
+
+
+Simulação dos custos médios com 1000 residências seguradas:
+
+```{r}
+# fixa a semente para reprodutibilidade
+set.seed(2025)
+
+# simula o custo para 1.000 residências seguradas
+custos_1000 <- sample(
+  c(0, 150000),         # sem sinistro e com sinistro
+  size = 1000,          # número de residências
+  replace = TRUE,       # com reposição
+  prob = c(0.99, 0.01)  # probabilidade de cada evento
+)
+
+# estimativa do custo médio por apólice com 1.000 residências seguradas
+mean(custos_1000)
+```
+
+
+**d)**
+
+conforme os resultados das simulações é a Lei dos Grandes Números, o que pode ser explicado é :Quanto mais residências contem no seguro, mais o custo médio vai ficando mais  próximo do valor esperado, que seria  os R$ 1.500,Isso é importante pras seguradoras ,pois possibilita prever melhor os custos e não correr tanto risco com sinistro. Mediante a isso ,com mais clientes, fica mais fácil de manter o controle dos valores e ter lucro.
+
+
+**e)**
+
+Com a franquia de R$ 50.000, a seguradora só vai pagar o que passar desse valor. Ou seja, se o prejuízo for R$ 150.000, a seguradora  irá pagar  somente  R$ 100.000 e o cliente paga os R$ 50.000 da franquia. Isso faz  com que o custo por sinistro( valor médio gasto por uma seguradora) seja menor . Como ela paga menos em cada caso, o custo médio por apólice também diminui. Por isso, ela pode escolher entre: Cobrar um prêmio menor, tornando o seguro  mais barato ,para atrair mais clientes; Ou manter o valor atual e ter mais lucro por apólice.
+
+
+
+## Questão 2
+
+**a)** 
+
+```{r}
+# Parâmetros da distribuição
+media <- 6.5
+desvio <- 1.8
+
+# Probabilidade de X > 8
+prob_superior_8 <- 1 - pnorm(8, mean = media, sd = desvio)
+prob_superior_8
+
+```
+
+
+**b)** 
+
+```{r}
+# Parâmetros
+media <- 6.5
+desvio <- 1.8
+
+# Quantil 90% (prazo máximo com 90% de cobertura)
+prazo_90 <- qnorm(0.90, mean = media, sd = desvio)
+prazo_90
+```
+
+
+**c)** 
+
+```{r}
+# Parâmetros da distribuição Normal
+media <- 6.5
+desvio_padrao <- 1.8
+prazo_prometido <- 7
+
+# Queremos calcular a probabilidade de o tempo de entrega ser no máximo 7 dias.
+# Matematicamente: P(X <= 7).
+# Usamos a função pnorm, que calcula a probabilidade acumulada à esquerda de um valor.
+prob_ate_7_dias <- pnorm(prazo_prometido, mean = media, sd = desvio_padrao)
+
+# Exibe o resultado
+print(prob_ate_7_dias)
+```
+
+
+
+
+
+## Questão 3
+
+
+**a)** 
+
+```{r}
+# Parâmetros
+media <- 18500
+desvio <- 2300
+valor_loja <- 21800
+
+# Cálculo do score Z
+z <- (valor_loja - media) / desvio
+z
+
+```
+
+Reposta:
+
+
+**b)** 
+
+```{r}
+# Score Z calculado no item anterior (aproximadamente 1.43)
+score_z <- 1.434783
+
+# A função pnorm(), quando usada sem especificar média e desvio padrão,
+# opera na Distribuição Normal Padrão (Z).
+# Ela calcula a probabilidade acumulada até o valor do score Z,
+# o que corresponde ao percentil do desempenho da loja.
+prob_acumulada <- pnorm(score_z)
+
+# Exibe o resultado
+print(prob_acumulada)
+```
+
+
+Reposta:
+
+
+**c)**
+
+Sim, esse dia foi considerado excepcional pra loja, pois ela ficou acima de 92,36 das lojas, dessa forma ficando entre os 10% melhores sendo um dia excepcional
+
+## Questão 4
+
+**a)**
+
+```{r}
+# Parâmetros
+media <- 0.011         # 1,1% de retorno médio mensal
+desvio <- 0.042        # 4,2% de desvio-padrão mensal
+investimento <- 400000 # Valor total investido
+
+# Cálculo do VaR percentual (nível de 1%)
+VaR_percentual <- qnorm(0.01, mean = media, sd = desvio)
+
+# Cálculo do VaR monetário (valor absoluto da perda)
+VaR_monetario <- investimento * abs(VaR_percentual)
+
+# Resultados
+VaR_percentual
+VaR_monetario
+```
+
+Cálculo do VaR 99% percentual:
+
+```{r}
+# Parâmetros
+media <- 0.011     # 1,1% de retorno médio
+desvio <- 0.042    # 4,2% de desvio-padrão
+
+# Cálculo do VaR percentual com 99% de confiança (quantil de 1%)
+VaR_percentual <- qnorm(0.01, mean = media, sd = desvio)
+VaR_percentual
+```
+
+Cálculo do VaR 99% monetário (valor absoluto da perda):
+
+```{r}
+# Valor investido
+investimento <- 400000
+
+# Cálculo do VaR monetário (valor absoluto da perda esperada)
+VaR_monetario <- investimento * abs(VaR_percentual)
+VaR_monetario
+
+```
+
+
+
+**b)**
+
+O VaR de 99% mostra que em 99% dos casos o prejuízo máximo que pode acontecer no mês é de 38.640,00 reais e que somente em 1% dos casos seria superior a isso
+
+**c)**
+Duas situações que tornam inadequada a suposição de normalidade é a assimetria dos dados, pois a normal é simétrica, e as caudas pesadas que difere da normal que tem caudas finas.
+
+
+
+
+## Questão 5
+
+- [ ] A 
+
+- [ ] B 
+
+- [ ] C 
+
+- [x] D 
+
+- [ ] E 
+
+
+Por que as demais estão erradas?
+
+- **Letra A ** - A letra A está errada pois confunde número absoluto com taxa.
+  
+- **Letra** - A letra B está errada pois culpa a vítima pela situação
+  
+- **Letra** - A letra C está errada pois confunde também o número absoluto com a taxa
+  
+- **Letra** - E a letra E, está errada pois afirma o oposto dos dados
+
+
+
+
+
+## Questão 6
+
+
+**a)** 
+
+
+```{r}
+library(tidyquant)
+library(dplyr)
+library(tidyr)
+
+# a) Pipeline para baixar, processar e organizar os dados de preços
+dados_precos <- c("PETR4.SA", "WEGE3.SA") %>%
+  tq_get(from = "2024-01-01") %>%
+  select(symbol, date, close) %>%
+  pivot_wider(names_from = symbol, values_from = close) %>%
+  rename(petrobras = PETR4.SA, weg = WEGE3.SA)
+
+# Exibe as primeiras linhas do resultado
+head(dados_precos)
+```
+
+
+
+**b.1)** 
+   
+```{r}
+# cálculo dos retornos logarítmicos
+dados_ret <- dados_precos %>% 
+  mutate(
+    ret_petrobras = log(petrobras / lag(petrobras)),
+    ret_weg       = log(weg       / lag(weg))
+  ) %>% 
+  drop_na()
+
+# exibição das primeiras linhas
+head(dados_ret)
+```
+
+
+
+
+**b.2)** 
+
+```{r}
+# cálculo da correlação de Pearson
+correlacao <- cor(dados_ret$ret_petrobras, dados_ret$ret_weg)
+correlacao
+
+```
+
+
+**b.3)** 
+
+```{r}
+# Carrega o pacote effectsize (se ainda não estiver carregado)
+library(effectsize)
+
+# Interpretação da correlação de Pearson usando critérios de Cohen (1988)
+interpret_r(correlacao)
+```
+
+
+**Interpretação:**
+
+Se o valor da correlação ficou, por exemplo, em torno de 0,45, a função interpret_r() vai classificar como moderada.
+Isso significa que os retornos de Petrobras e Weg variam juntos com uma força razoável, mas não tão forte. Então, elas têm alguma relação, mas ainda existe independência entre os movimentos delas.
+
+**c)** 
+
+```{r}
+library(ggplot2)
+
+# obtém datas mínima e máxima do período
+inicio <- min(dados_ret$date)
+fim <- max(dados_ret$date)
+
+# cria o gráfico de dispersão com título, legenda e reta de regressão
+ggplot(dados_ret, aes(x = ret_petrobras, y = ret_weg)) +
+  geom_point(alpha = 0.5, color = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, color = "darkred") +
+  labs(
+    title = "Correlação entre Retornos Diários: PETR4 e WEGE3",
+    subtitle = paste("Período:", inicio, "a", fim),
+    x = "Retorno Diário - Petrobras (PETR4)",
+    y = "Retorno Diário - Weg (WEGE3)",
+    caption = "Fonte: Yahoo Finance, via tq_get() - tidyquant"
+  ) +
+  theme_minimal()
+```
+
+
+**Interpretação:**
+
+Interpretação do gráfico: o gráfico de dispersão mostra que existe correlação moderada entre as ações, então quando uma sobre a outra tende a subir também, apesar de não ser uma correlação perfeita.
+
+**d)** 
+
+A combinação PETR4 com WEGE3, contribui para a diversificação da carteira, pois como a correlação não é perfeita, elas não se movem sempre juntas, então se uma cair a outra pode não cair ou até aumentar diminuindo riscos e evitar perdas grandes.
