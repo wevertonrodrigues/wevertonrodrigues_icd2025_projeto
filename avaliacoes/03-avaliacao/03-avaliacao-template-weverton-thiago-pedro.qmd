@@ -1,0 +1,236 @@
+---
+title: "Avaliação 3 - Valor: 34 pontos"
+subtitle: "Introdução à Ciência de Dados - 2025 <br> Bacharelado em Administração"
+author:   
+  - Pedro Silva Gomides
+  - Thiago Augusto Silva Vital
+  - Weverton de Oliveira Rodrigues
+title-block-banner: "#27445C"
+format:
+  html:
+    embed-resources: true
+    page-layout: article
+    toc: true
+    toc-location: left
+lang: "pt"
+date: 2025-07-09
+date-format: long
+execute:
+  eval: true
+  echo: true
+  warning: false
+  message: false
+---
+
+
+
+```{r}
+#| label: setup
+#| echo: false
+
+# configura a exbição de números decimais
+options(digits = 3, scipen = 999)
+
+# pacotes utilizados
+library(tidyverse)
+library(ggpubr)
+```
+
+
+
+
+## Questão 1
+
+### Inferência sobre Proporções Populacionais
+
+**a)** 
+
+```{r}
+# Dados da pesquisa
+
+n_A <- 350
+x_A <- 273
+n_B <- 290
+x_B <- 198
+
+```
+
+
+```{r}
+# Estimativa pontual da proporção de clientes satisfeitos do grupo A
+p_hat_A <- x_A / n_A
+p_hat_A
+
+```
+
+
+```{r}
+# Estimativa pontual da proporção de clientes satisfeitos do grupo B
+p_hat_B <- x_B / n_B
+p_hat_B
+
+```
+
+
+```{r}
+# Estimativa pontual da diferença entre as proporções
+diff_hat <- p_hat_A - p_hat_B
+diff_hat
+
+```
+
+
+
+
+**b)** 
+
+Por que em uma análise estatisticamente fundamentada, é incorreto reportar somente estimativas pontuais dos parâmetros da população?
+
+A análise pode estar incorreta se analisar apenas alguns parâmetros. O resultado precisa estar completo para garantir que mais variáveis sejam consideradas ficando mais próximo da realidade.
+
+
+
+**c)** 
+
+
+```{r}
+x <- c(273, 198)          # Número de clientes satisfeitos em A e B
+n <- c(350, 290)          # Total de clientes em A e B
+
+# Teste de proporções
+prop.test(x, n, conf.level = 0.95)
+
+```
+
+
+
+**d)** 
+
+Interprete a estimativa por intervalo obtida e indique se há evidência estatisticamente siginificativa de que uma categoria tem mais clientes satisfeitos que a outra. Justifique sua resposta.
+
+Sim, podemos observar ao analisar os dados, que A tem mais pessoas felizes que B, mesmo que oçile, isso continua constante no caso de outros levantamentos, uma vez que o intervalo não tem 0. 
+
+**e.1)** 
+Formule as hipóteses nula e alternativa;
+
+
+
+$$
+\begin{cases}
+H_0: p_A = 0{,}70 \\
+H_A: p_A > 0{,}70
+\end{cases}
+$$
+
+
+
+**e.2)** 
+ 
+
+```{r}
+# Teste de hipótese unilateral para proporção da Categoria A
+res_unilateral <- prop.test(
+  x          = x_A,         
+  n          = n_A,
+  p          = 0.70,
+  alternative = "greater",
+  correct     = FALSE
+)
+res_unilateral
+
+```
+
+
+
+**e.3)** 
+
+Interprete o resultado com base no valor-p obtido.
+
+O valor retornado é muito baixo, o que nos diz que é quase impossível atingir os 78% de satisfação na amostra se a proporção for 70%. Podemos afirmar que temos hipóteses suficientes para desconsiderar a hipótese nula.
+
+
+
+## Questão 2
+
+### Inferência sobre Médias Populacionais
+
+```{r}
+# Cria a data.frame dados_entrega
+dados_entrega <- data.frame(
+  tempo = c(
+    1.9908307, 3.7595980, 3.9207872, 1.9499968, 2.5570788, 2.9083451, 
+    3.8215787, 3.4254931, 4.1066170, 3.7159112, 2.3757705, 4.3799877, 
+    4.0898537, 4.6885358, 1.9032753, 4.9526208, 4.7632426, 3.5487350, 
+    5.2520306, 4.5840950, 2.7728566, 1.6544221, 1.9158527, 3.3874123,
+    3.1677474, 4.2208561, 2.7834305, 2.9044544, 4.5360855, 2.2195599, 
+    2.7240852, 2.6655864, 1.4009759, 3.4665378, 3.3535627, 4.6972176, 
+    1.9733366, 2.5457229, 2.2336230, 2.6573906, 2.6681639, 3.1323411, 
+    2.4254247, 2.7917952, 4.9867621, 2.8329370, 2.8299644, 3.5470596, 
+    1.4070574, 3.1499424, 1.9685541, 2.4178228, 3.4466604, 3.6865291, 
+    3.3801921, 3.5045991, 2.2455080, 4.4135944, 3.2958687, 3.3348655, 
+    0.2198195, 1.6197339, 2.4793752, 3.6855232, 2.6521006, 4.5120387, 
+    4.4196294, 1.1254838, 2.1009464, 1.8516211, 2.5130132, 2.6551619, 
+    0.8074057, 4.2885169, 2.6779839
+  ),
+  parceiro = c(
+    rep("Atual", 35),
+    rep("Novo", 40)
+  )
+)
+```
+
+
+
+**a)** 
+
+
+```{r}
+# Gráfico quantile-quantile para verificar normalidade dos dados
+
+ggqqplot(dados_entrega, 
+         x     = "tempo", 
+         color = "parceiro", 
+         shape = "parceiro") +
+  labs(
+    title = "QQ-Plot dos tempos de entrega por parceiro (sobreposto)",
+    x     = "Quantis teóricos",
+    y     = "Quantis amostrais"
+  )
+
+
+```
+
+
+
+
+**b)**
+
+
+```{r}
+# Estimativa por intervalo de confiança para a diferença entre médias 
+res_diff <- t.test(
+  tempo ~ parceiro, 
+  data      = dados_entrega, 
+  conf.level = 0.95
+)
+res_diff$conf.int
+
+```
+
+
+
+
+**c)** 
+
+De acordo com a diferença média, o parceiro atual parece ter tempos de entrega maiores, o novo fornecedor é em média, quase meio dia mais rápido.
+
+**d)** 
+
+Considerando que o 0 aparece no intervalo, não temos evidência significativa de que um dos parceiros tenha tempo médio de entrega maior que outro.
+
+
+
+
+
+
+
