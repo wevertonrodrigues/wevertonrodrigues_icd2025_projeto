@@ -3447,7 +3447,26 @@ attr(,&quot;conf.level&quot;)
 </div>
 </div>
 <p><strong>c)</strong></p>
-<p>De acordo com a diferença média, o parceiro atual parece ter tempos de entrega maiores, o novo fornecedor é em média, quase meio dia mais rápido.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Rode o t-test e salve no objeto &#39;resultado_ttest&#39;</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>resultado_ttest <span class="ot">&lt;-</span> <span class="fu">t.test</span>(</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  tempo <span class="sc">~</span> parceiro,</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">data      =</span> dados_entrega,</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">conf.level =</span> <span class="fl">0.95</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Agora você pode extrair as estimativas</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>media_atual <span class="ot">&lt;-</span> resultado_ttest<span class="sc">$</span>estimate[<span class="dv">1</span>]</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>media_novo  <span class="ot">&lt;-</span> resultado_ttest<span class="sc">$</span>estimate[<span class="dv">2</span>]</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>diferenca_estimada <span class="ot">&lt;-</span> media_atual <span class="sc">-</span> media_novo</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>diferenca_estimada</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>mean in group Atual 
+              0.481 </code></pre>
+</div>
+</div>
 <p><strong>d)</strong></p>
 <p>Considerando que o 0 aparece no intervalo, não temos evidência significativa de que um dos parceiros tenha tempo médio de entrega maior que outro.</p>
 </section>
